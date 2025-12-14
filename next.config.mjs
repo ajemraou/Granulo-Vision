@@ -1,11 +1,11 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  typescript: {
-    ignoreBuildErrors: true,
-  },
+  output: 'export',  // <=== Enables static export
+  
+  // Optional: Disable image optimization if you are not using an external loader
   images: {
     unoptimized: true,
   },
-}
+};
 
-export default nextConfig
+module.exports = nextConfig;
