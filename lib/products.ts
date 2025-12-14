@@ -94,19 +94,51 @@ export const PRODUCTS: ProductProfile[] = [
   },
 ]
 
+export interface SessionConfig {
+  productId: string
+  productName: string
+  batchId?: string
+  thresholds: ProductProfile["thresholds"]
+  startedAt: string
+}
+
 export function getProductById(id: string): ProductProfile | undefined {
   return PRODUCTS.find((p) => p.id === id)
 }
 
 export function saveSelectedProduct(productId: string): void {
   if (typeof window !== "undefined") {
+    // Legacy support: just save the ID
     localStorage.setItem("selectedProduct", productId)
+  }
+}
+
+export function saveSessionConfig(config: SessionConfig): void {
+  if (typeof window !== "undefined") {
+    localStorage.setItem("sessionConfig", JSON.stringify(config))
+    // Also save ID for legacy compatibility if needed
+    localStorage.setItem("selectedProduct", config.productId)
   }
 }
 
 export function getSelectedProduct(): string | null {
   if (typeof window !== "undefined") {
     return localStorage.getItem("selectedProduct")
+  }
+  return null
+}
+
+export function getSessionConfig(): SessionConfig | null {
+  if (typeof window !== "undefined") {
+    const stored = localStorage.getItem("sessionConfig")
+    if (stored) {
+      try {
+        return JSON.parse(stored) as SessionConfig
+      } catch (e) {
+        console.error("Failed to parse session config", e)
+        return null
+      }
+    }
   }
   return null
 }

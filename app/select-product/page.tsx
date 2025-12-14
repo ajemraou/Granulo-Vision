@@ -4,14 +4,25 @@ import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { ScrollArea } from "@/components/ui/scroll-area"
+import { Separator } from "@/components/ui/separator"
+import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable"
 import { isAuthenticated, logout, getUsername } from "@/lib/auth"
-import { PRODUCTS, saveSelectedProduct } from "@/lib/products"
-import { LogOut, ChevronRight } from "lucide-react"
+import { PRODUCTS, saveSessionConfig, type ProductProfile } from "@/lib/products"
+import { LogOut, Search, Settings2, Play, Check, AlertCircle } from "lucide-react"
 import Image from "next/image"
+import { cn } from "@/lib/utils"
+import { DashboardHeader } from "@/components/dashboard-header"
 
 export default function SelectProductPage() {
   const router = useRouter()
   const [username, setUsername] = useState("")
+  const [searchQuery, setSearchQuery] = useState("")
+  const [selectedProduct, setSelectedProduct] = useState<ProductProfile | null>(null)
+  const [batchId, setBatchId] = useState("")
+  const [customThresholds, setCustomThresholds] = useState<ProductProfile["thresholds"] | null>(null)
 
   useEffect(() => {
     if (!isAuthenticated()) {
@@ -21,17 +32,37 @@ export default function SelectProductPage() {
     setUsername(getUsername())
   }, [router])
 
-  const handleProductSelect = (productId: string) => {
-    saveSelectedProduct(productId)
-    router.push("/dashboard")
-  }
+  // Reset custom thresholds when product changes
+  useEffect(() => {
+    if (selectedProduct) {
+      setCustomThresholds({ ...selectedProduct.thresholds })
+    }
+  }, [selectedProduct])
 
   const handleLogout = () => {
     logout()
     router.push("/")
   }
 
-  const groupedProducts = PRODUCTS.reduce(
+  const handleStartSession = () => {
+    if (!selectedProduct || !customThresholds) return
+
+    saveSessionConfig({
+      productId: selectedProduct.id,
+      productName: selectedProduct.name,
+      batchId: batchId || undefined,
+      thresholds: customThresholds,
+      startedAt: new Date().toISOString(),
+    })
+    router.push("/dashboard")
+  }
+
+  const filteredProducts = PRODUCTS.filter((p) =>
+    p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    p.category.toLowerCase().includes(searchQuery.toLowerCase())
+  )
+
+  const groupedProducts = filteredProducts.reduce(
     (acc, product) => {
       if (!acc[product.category]) {
         acc[product.category] = []
@@ -42,92 +73,238 @@ export default function SelectProductPage() {
     {} as Record<string, typeof PRODUCTS>,
   )
 
+  const updateThreshold = (key: keyof ProductProfile["thresholds"], value: string) => {
+    if (!customThresholds) return
+    const numValue = parseFloat(value)
+    if (isNaN(numValue)) return
+    setCustomThresholds({ ...customThresholds, [key]: numValue })
+  }
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-secondary/20 to-background">
-      <header className="border-b border-border bg-card shadow-sm">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Image
-              src="/logo.png"
-              alt="Logo"
-              width={40}
-              height={40}
-              className="drop-shadow-lg"
-            />
-            <div>
-              <h1 className="text-xl font-bold text-foreground">Granulo Vision</h1>
-              <p className="text-xs text-muted-foreground">Product Selection</p>
-            </div>
-          </div>
-          <div className="flex items-center gap-4">
-            <span className="text-sm text-muted-foreground">Welcome, {username}</span>
-            <Button variant="outline" size="sm" onClick={handleLogout}>
-              <LogOut className="w-4 h-4 mr-2" />
-              Logout
-            </Button>
-          </div>
-        </div>
-      </header>
+    <div className="h-screen flex flex-col bg-background overflow-hidden">
+      <DashboardHeader username={username} />
 
-      <main className="container mx-auto px-4 py-8">
-        <div className="max-w-4xl mx-auto space-y-6">
-          <div className="space-y-2">
-            <h2 className="text-3xl font-bold tracking-tight text-balance">Select Product Profile</h2>
-            <p className="text-muted-foreground text-pretty">
-              Choose the fertilizer product to monitor. Each profile has predefined quality thresholds for granulometry
-              and color consistency.
-            </p>
-          </div>
+      {/* Main Content - Split View */}
+      <main className="flex-1 overflow-hidden">
+        <ResizablePanelGroup direction="horizontal" className="h-full items-stretch">
 
-          {Object.entries(groupedProducts).map(([category, products]) => (
-            <div key={category} className="space-y-3">
-              <h3 className="text-lg font-semibold text-foreground">{category}</h3>
-              <div className="grid gap-3 md:grid-cols-2">
-                {products.map((product) => (
-                  <Card
-                    key={product.id}
-                    className="border-border hover:border-primary hover:shadow-lg transition-all cursor-pointer group"
-                    onClick={() => handleProductSelect(product.id)}
-                  >
-                    <CardHeader>
-                      <div className="flex items-start justify-between">
-                        <div className="space-y-1 flex-1">
-                          <CardTitle className="text-lg group-hover:text-primary transition-colors">
-                            {product.name}
-                          </CardTitle>
-                          <CardDescription className="text-xs">Quality thresholds configured</CardDescription>
-                        </div>
-                        <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors" />
-                      </div>
-                    </CardHeader>
-                    <CardContent className="space-y-2">
-                      <div className="grid grid-cols-2 gap-2 text-xs">
-                        <div className="space-y-1">
-                          <p className="text-muted-foreground">Fines {"<"} 1mm</p>
-                          <p className="font-mono text-foreground">Max {product.thresholds.lt_1mm_max}%</p>
-                        </div>
-                        <div className="space-y-1">
-                          <p className="text-muted-foreground">Target 2.5mm+</p>
-                          <p className="font-mono text-foreground">
-                            {product.thresholds.gt_2_5mm_min}-{product.thresholds.gt_2_5mm_max}%
-                          </p>
-                        </div>
-                        <div className="space-y-1">
-                          <p className="text-muted-foreground">Oversize {">"} 3.5mm</p>
-                          <p className="font-mono text-foreground">Max {product.thresholds.gt_3_5mm_max}%</p>
-                        </div>
-                        <div className="space-y-1">
-                          <p className="text-muted-foreground">Color Score</p>
-                          <p className="font-mono text-foreground">Min {product.thresholds.color_score_min}%</p>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
+          {/* Left Panel: Product Selection */}
+          <ResizablePanel defaultSize={40} minSize={30} maxSize={50} className="bg-secondary/30 flex flex-col">
+            <div className="px-6 py-4 border-b border-border bg-background/50 backdrop-blur-sm sticky top-0 z-10 space-y-3">
+              <div>
+                <h2 className="text-lg font-semibold tracking-tight">Select Product</h2>
+                <p className="text-sm text-muted-foreground">Choose a product profile to begin monitoring.</p>
+              </div>
+              <div className="relative">
+                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                <Input
+                  type="search"
+                  placeholder="Search products..."
+                  className="pl-9 bg-background"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
               </div>
             </div>
-          ))}
-        </div>
+
+            <ScrollArea className="flex-1 px-6 py-4">
+              <div className="space-y-6 pb-8">
+                {Object.entries(groupedProducts).length === 0 ? (
+                  <div className="text-center py-12 text-muted-foreground">
+                    <p>No products found matching "{searchQuery}"</p>
+                  </div>
+                ) : (
+                  Object.entries(groupedProducts).map(([category, products]) => (
+                    <div key={category} className="space-y-3">
+                      <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-1">
+                        {category}
+                      </h3>
+                      <div className="grid gap-2">
+                        {products.map((product) => (
+                          <div
+                            key={product.id}
+                            onClick={() => setSelectedProduct(product)}
+                            className={cn(
+                              "group relative flex items-center justify-between p-4 rounded-lg border cursor-pointer transition-all duration-200",
+                              selectedProduct?.id === product.id
+                                ? "bg-primary/5 border-primary shadow-sm ring-1 ring-primary/20"
+                                : "bg-card border-border hover:border-primary/50 hover:shadow-sm"
+                            )}
+                          >
+                            <div className="space-y-1">
+                              <p className={cn(
+                                "font-medium transition-colors",
+                                selectedProduct?.id === product.id ? "text-primary" : "text-foreground"
+                              )}>
+                                {product.name}
+                              </p>
+                              <p className="text-xs text-muted-foreground line-clamp-1">
+                                Default: {product.thresholds.gt_2_5mm_min}-{product.thresholds.gt_2_5mm_max}% target
+                              </p>
+                            </div>
+                            {selectedProduct?.id === product.id && (
+                              <div className="h-2 w-2 rounded-full bg-primary animate-in zoom-in duration-300" />
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </ScrollArea>
+          </ResizablePanel>
+
+          <ResizableHandle withHandle />
+
+          {/* Right Panel: Configuration */}
+          <ResizablePanel defaultSize={60} className="bg-background flex flex-col">
+            {selectedProduct && customThresholds ? (
+              <div className="flex flex-col h-full">
+                <div className="p-6 border-b border-border space-y-1">
+                  <div className="flex items-center gap-2 text-primary mb-2">
+                    <Settings2 className="w-5 h-5" />
+                    <span className="text-sm font-medium uppercase tracking-wider">Configuration</span>
+                  </div>
+                  <h2 className="text-2xl font-bold text-foreground">{selectedProduct.name}</h2>
+                  <p className="text-muted-foreground">Configure session parameters and quality thresholds.</p>
+                </div>
+
+                <ScrollArea className="flex-1 p-6">
+                  <div className="max-w-2xl mx-auto space-y-8">
+
+                    {/* Batch Info */}
+                    <div className="space-y-4 p-5 rounded-lg border border-border bg-card/50">
+                      <h3 className="font-semibold flex items-center gap-2">
+                        <span className="flex items-center justify-center w-6 h-6 rounded-full bg-secondary text-xs">1</span>
+                        Session Details
+                      </h3>
+                      <div className="grid gap-2">
+                        <Label htmlFor="batchId">Batch ID / Lot Number (Optional)</Label>
+                        <Input
+                          id="batchId"
+                          placeholder="e.g. B-2024-001"
+                          value={batchId}
+                          onChange={(e) => setBatchId(e.target.value)}
+                          className="max-w-md"
+                        />
+                        <p className="text-xs text-muted-foreground">Used for reporting and traceability.</p>
+                      </div>
+                    </div>
+
+                    {/* Thresholds */}
+                    <div className="space-y-4 p-5 rounded-lg border border-border bg-card/50">
+                      <div className="flex items-center justify-between">
+                        <h3 className="font-semibold flex items-center gap-2">
+                          <span className="flex items-center justify-center w-6 h-6 rounded-full bg-secondary text-xs">2</span>
+                          Quality Thresholds
+                        </h3>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="text-xs h-8"
+                          onClick={() => setCustomThresholds({ ...selectedProduct.thresholds })}
+                        >
+                          Reset to Defaults
+                        </Button>
+                      </div>
+
+                      <div className="grid gap-6 sm:grid-cols-2">
+                        <div className="space-y-2">
+                          <Label className="text-xs text-muted-foreground uppercase">Fines {"<"} 1mm (Max %)</Label>
+                          <div className="flex items-center gap-2">
+                            <Input
+                              type="number"
+                              value={customThresholds.lt_1mm_max}
+                              onChange={(e) => updateThreshold("lt_1mm_max", e.target.value)}
+                              className="font-mono"
+                            />
+                            <span className="text-sm text-muted-foreground">%</span>
+                          </div>
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label className="text-xs text-muted-foreground uppercase">Oversize {">"} 3.5mm (Max %)</Label>
+                          <div className="flex items-center gap-2">
+                            <Input
+                              type="number"
+                              value={customThresholds.gt_3_5mm_max}
+                              onChange={(e) => updateThreshold("gt_3_5mm_max", e.target.value)}
+                              className="font-mono"
+                            />
+                            <span className="text-sm text-muted-foreground">%</span>
+                          </div>
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label className="text-xs text-muted-foreground uppercase">Target 2.5mm+ (Min %)</Label>
+                          <div className="flex items-center gap-2">
+                            <Input
+                              type="number"
+                              value={customThresholds.gt_2_5mm_min}
+                              onChange={(e) => updateThreshold("gt_2_5mm_min", e.target.value)}
+                              className="font-mono"
+                            />
+                            <span className="text-sm text-muted-foreground">%</span>
+                          </div>
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label className="text-xs text-muted-foreground uppercase">Target 2.5mm+ (Max %)</Label>
+                          <div className="flex items-center gap-2">
+                            <Input
+                              type="number"
+                              value={customThresholds.gt_2_5mm_max}
+                              onChange={(e) => updateThreshold("gt_2_5mm_max", e.target.value)}
+                              className="font-mono"
+                            />
+                            <span className="text-sm text-muted-foreground">%</span>
+                          </div>
+                        </div>
+                        <div className="space-y-2">
+                          <Label className="text-xs text-muted-foreground uppercase">Color Score (Min)</Label>
+                          <div className="flex items-center gap-2">
+                            <Input
+                              type="number"
+                              value={customThresholds.color_score_min}
+                              onChange={(e) => updateThreshold("color_score_min", e.target.value)}
+                              className="font-mono"
+                            />
+                            <span className="text-sm text-muted-foreground">/100</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                  </div>
+                </ScrollArea>
+
+                <div className="p-6 border-t border-border bg-card/30 backdrop-blur-sm">
+                  <div className="max-w-2xl mx-auto flex items-center justify-end gap-4">
+                    <div className="text-right hidden sm:block">
+                      <p className="text-sm font-medium">Ready to start?</p>
+                      <p className="text-xs text-muted-foreground">Configuration will be saved for this session.</p>
+                    </div>
+                    <Button size="lg" onClick={handleStartSession} className="gap-2 shadow-lg shadow-primary/20">
+                      <Play className="w-4 h-4 fill-current" />
+                      Start Monitoring
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="flex-1 flex flex-col items-center justify-center text-center p-8 text-muted-foreground space-y-4">
+                <div className="w-16 h-16 rounded-full bg-secondary/50 flex items-center justify-center">
+                  <Settings2 className="w-8 h-8 opacity-50" />
+                </div>
+                <div className="max-w-xs">
+                  <h3 className="text-lg font-semibold text-foreground">No Product Selected</h3>
+                  <p className="text-sm mt-1">Select a product from the list on the left to configure thresholds and start a session.</p>
+                </div>
+              </div>
+            )}
+          </ResizablePanel>
+        </ResizablePanelGroup>
       </main>
     </div>
   )

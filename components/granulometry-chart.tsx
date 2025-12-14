@@ -17,28 +17,28 @@ interface GranulometryChartProps {
 export function GranulometryChart({ data, compact = false }: GranulometryChartProps) {
   // Professional muted colors optimized for dark backgrounds with high contrast
   const chartData = [
-    { 
-      name: "< 1mm", 
+    {
+      name: "< 1mm",
       label: "Fines",
-      value: data.lt_1mm, 
+      value: data.lt_1mm,
       fill: "#E8A87C" // Muted orange - warning
     },
-    { 
-      name: "> 2.5mm", 
+    {
+      name: "> 2.5mm",
       label: "Target",
-      value: data.gt_2_5mm, 
+      value: data.gt_2_5mm,
       fill: "#5FB3A1" // Muted teal - success/target
     },
-    { 
-      name: "> 3.5mm", 
+    {
+      name: "> 3.5mm",
       label: "Oversize",
-      value: data.gt_3_5mm, 
+      value: data.gt_3_5mm,
       fill: "#95B8D1" // Muted blue - neutral
     },
-    { 
-      name: "> 4mm", 
+    {
+      name: "> 4mm",
       label: "Critical",
-      value: data.gt_4mm, 
+      value: data.gt_4mm,
       fill: "#D97B8F" // Muted red - critical
     },
   ]
@@ -63,13 +63,13 @@ export function GranulometryChart({ data, compact = false }: GranulometryChartPr
           <ChartContainer config={chartConfig} className="h-[140px] w-[140px]">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
-                <Pie 
-                  data={chartData} 
-                  dataKey="value" 
-                  nameKey="name" 
-                  cx="50%" 
-                  cy="50%" 
-                  innerRadius={40} 
+                <Pie
+                  data={chartData}
+                  dataKey="value"
+                  nameKey="name"
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={40}
                   outerRadius={65}
                   strokeWidth={2}
                   stroke="hsl(var(--background))"
@@ -114,9 +114,9 @@ export function GranulometryChart({ data, compact = false }: GranulometryChartPr
             {chartData.map((item, idx) => (
               <div key={idx} className="flex items-center justify-between gap-2">
                 <div className="flex items-center gap-1.5">
-                  <div 
-                    className="w-2.5 h-2.5 rounded-sm flex-shrink-0" 
-                    style={{ backgroundColor: item.fill }} 
+                  <div
+                    className="w-2.5 h-2.5 rounded-sm flex-shrink-0"
+                    style={{ backgroundColor: item.fill }}
                   />
                   <p className="text-xs text-muted-foreground">{item.name}</p>
                 </div>
@@ -139,13 +139,13 @@ export function GranulometryChart({ data, compact = false }: GranulometryChartPr
         <ChartContainer config={chartConfig} className="h-[300px]">
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
-              <Pie 
-                data={chartData} 
-                dataKey="value" 
-                nameKey="name" 
-                cx="50%" 
-                cy="50%" 
-                innerRadius={70} 
+              <Pie
+                data={chartData}
+                dataKey="value"
+                nameKey="name"
+                cx="50%"
+                cy="50%"
+                innerRadius={70}
                 outerRadius={110}
                 strokeWidth={2}
                 stroke="hsl(var(--background))"
@@ -189,9 +189,9 @@ export function GranulometryChart({ data, compact = false }: GranulometryChartPr
         <div className="grid grid-cols-2 gap-3 mt-4">
           {chartData.map((item, idx) => (
             <div key={idx} className="flex items-center gap-2.5 p-2 rounded-lg bg-secondary/30">
-              <div 
-                className="w-4 h-4 rounded flex-shrink-0" 
-                style={{ backgroundColor: item.fill }} 
+              <div
+                className="w-4 h-4 rounded flex-shrink-0"
+                style={{ backgroundColor: item.fill }}
               />
               <div className="flex-1 min-w-0">
                 <p className="text-xs text-muted-foreground truncate">{item.name}</p>

@@ -22,7 +22,7 @@ export function TrendChart({ data, metric, title, color, threshold, thresholdTyp
 
   // Get current value for status determination
   const currentValue = chartData[chartData.length - 1]?.value || 0
-  
+
   // Determine status and color based on threshold
   let statusColor = color
   let isWarning = false
@@ -63,7 +63,7 @@ export function TrendChart({ data, metric, title, color, threshold, thresholdTyp
 
   return (
     <Card className="border-border">
-      <CardHeader className="pb-2">
+      <CardHeader className="pb-0 pt-4">
         <div className="flex items-start justify-between">
           <div>
             <CardTitle className="text-sm">{title}</CardTitle>
@@ -81,13 +81,13 @@ export function TrendChart({ data, metric, title, color, threshold, thresholdTyp
           </div>
         </div>
       </CardHeader>
-      <CardContent className="pb-3">
-        <ChartContainer config={chartConfig} className="h-[140px]">
+      <CardContent className="pb-2">
+        <ChartContainer config={chartConfig} className="h-[110px] w-full">
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={chartData} margin={{ top: 5, right: 5, left: 0, bottom: 0 }}>
-              <CartesianGrid 
-                strokeDasharray="3 3" 
-                stroke="hsl(var(--border))" 
+              <CartesianGrid
+                strokeDasharray="3 3"
+                stroke="hsl(var(--border))"
                 vertical={false}
                 opacity={0.3}
               />
@@ -100,19 +100,19 @@ export function TrendChart({ data, metric, title, color, threshold, thresholdTyp
                 interval="preserveStartEnd"
                 minTickGap={40}
               />
-              <YAxis 
-                stroke="hsl(var(--muted-foreground))" 
+              <YAxis
+                stroke="hsl(var(--muted-foreground))"
                 fontSize={11}
                 tickLine={false}
                 axisLine={false}
                 domain={[0, 'auto']}
                 tickFormatter={(value) => `${value}%`}
               />
-              <ChartTooltip 
+              <ChartTooltip
                 content={<ChartTooltipContent />}
                 cursor={{ stroke: "hsl(var(--muted-foreground))", strokeWidth: 1, strokeDasharray: "3 3" }}
               />
-              
+
               {/* Threshold line */}
               {threshold !== undefined && (
                 <ReferenceLine
@@ -128,10 +128,10 @@ export function TrendChart({ data, metric, title, color, threshold, thresholdTyp
                   }}
                 />
               )}
-              
-              <Line 
-                type="monotone" 
-                dataKey="value" 
+
+              <Line
+                type="monotone"
+                dataKey="value"
                 stroke={statusColor}
                 strokeWidth={2.5}
                 dot={false}

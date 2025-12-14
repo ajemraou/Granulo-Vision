@@ -86,11 +86,6 @@ export function ArchiveTable({ data, onViewRecord }: ArchiveTableProps) {
             </TableBody>
           </Table>
         </div>
-        {data.length > 100 && (
-          <div className="p-4 text-center border-t border-border">
-            <p className="text-xs text-muted-foreground">Showing first 100 records. Use filters to narrow results.</p>
-          </div>
-        )}
       </CardContent>
     </Card>
   )

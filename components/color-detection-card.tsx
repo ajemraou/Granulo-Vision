@@ -52,7 +52,7 @@ export function ColorDetectionCard({ colorScore, threshold, compact = false }: C
           </div>
           <Badge variant={status.variant} className="text-xs">{status.label}</Badge>
         </div>
-        
+
         <div className="flex items-center gap-3">
           <div className="flex-1">
             <div className="flex items-baseline gap-2 mb-2">
@@ -79,9 +79,8 @@ export function ColorDetectionCard({ colorScore, threshold, compact = false }: C
           {DETECTED_COLORS.map((color, index) => (
             <div key={color.name} className="space-y-1">
               <div
-                className={`w-full h-10 rounded border transition-all ${
-                  index === currentColorIndex ? "ring-1 ring-primary" : ""
-                }`}
+                className={`w-full h-10 rounded border transition-all ${index === currentColorIndex ? "ring-1 ring-primary" : ""
+                  }`}
                 style={{
                   backgroundColor: color.hex,
                   borderColor: "hsl(var(--border))",
@@ -178,9 +177,8 @@ export function ColorDetectionCard({ colorScore, threshold, compact = false }: C
             {DETECTED_COLORS.map((color, index) => (
               <div key={color.name} className="space-y-1.5">
                 <div
-                  className={`w-full h-12 rounded border-2 transition-all ${
-                    index === currentColorIndex ? "ring-2 ring-primary scale-105" : "opacity-60"
-                  }`}
+                  className={`w-full h-12 rounded border-2 transition-all ${index === currentColorIndex ? "ring-2 ring-primary scale-105" : "opacity-60"
+                    }`}
                   style={{
                     backgroundColor: color.hex,
                     borderColor: "hsl(var(--border))",

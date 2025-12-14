@@ -12,6 +12,7 @@ import { TrendChart } from "@/components/trend-chart"
 import { CameraFeedPanel } from "@/components/camera-feed-panel"
 import { ActiveNotifications } from "@/components/active-notifications"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import type { AlertItem } from "@/components/alert-history"
 
 export default function DashboardPage() {
   const router = useRouter()
@@ -19,6 +20,7 @@ export default function DashboardPage() {
   const [currentData, setCurrentData] = useState<QualityDataPoint | null>(null)
   const [historicalData, setHistoricalData] = useState<QualityDataPoint[]>([])
   const [productId, setProductId] = useState<string | null>(null)
+  const [alerts, setAlerts] = useState<AlertItem[]>([])
 
   useEffect(() => {
     if (!isAuthenticated()) {
@@ -40,10 +42,77 @@ export default function DashboardPage() {
     setHistoricalData(initialData)
     setCurrentData(initialData[initialData.length - 1])
 
+    // Process initial data for alerts
+    const initialAlerts: AlertItem[] = []
+    const product = getProductById(selectedProduct)
+
+    if (product) {
+      initialData.forEach((point, index) => {
+        if (point.status !== "normal") {
+          // Create a unique ID based on timestamp
+          const id = `alert-${new Date(point.timestamp).getTime()}`
+
+          // Determine metric and message
+          let metric = "Unknown Issue"
+          let message = "Quality deviation detected"
+
+          if (point.lt_1mm_percent > product.thresholds.lt_1mm_max) {
+            metric = "Fines (< 1mm)"
+            message = `${point.lt_1mm_percent.toFixed(2)}% exceeds threshold`
+          } else if (point.gt_4mm_percent > product.thresholds.gt_4mm_max) {
+            metric = "Oversize (> 4mm)"
+            message = `${point.gt_4mm_percent.toFixed(2)}% exceeds threshold`
+          } else if (point.color_score < product.thresholds.color_score_min) {
+            metric = "Color Consistency"
+            message = `${point.color_score.toFixed(2)}% below threshold`
+          }
+
+          initialAlerts.push({
+            id,
+            timestamp: point.timestamp,
+            severity: point.status as "warning" | "critical",
+            metric,
+            message
+          })
+        }
+      })
+      setAlerts(initialAlerts)
+    }
+
     // Subscribe to live updates
     const unsubscribe = subscribeToLiveData(selectedProduct, (newData) => {
       setCurrentData(newData)
       setHistoricalData((prev) => [...prev.slice(-59), newData])
+
+      // Check for new alerts
+      if (newData.status !== "normal" && product) {
+        const id = `alert-${new Date(newData.timestamp).getTime()}`
+        let metric = "Unknown Issue"
+        let message = "Quality deviation detected"
+
+        if (newData.lt_1mm_percent > product.thresholds.lt_1mm_max) {
+          metric = "Fines (< 1mm)"
+          message = `${newData.lt_1mm_percent.toFixed(2)}% exceeds threshold`
+        } else if (newData.gt_4mm_percent > product.thresholds.gt_4mm_max) {
+          metric = "Oversize (> 4mm)"
+          message = `${newData.gt_4mm_percent.toFixed(2)}% exceeds threshold`
+        } else if (newData.color_score < product.thresholds.color_score_min) {
+          metric = "Color Consistency"
+          message = `${newData.color_score.toFixed(2)}% below threshold`
+        }
+
+        setAlerts(prev => {
+          // Avoid duplicates
+          if (prev.some(a => a.id === id)) return prev
+          return [...prev, {
+            id,
+            timestamp: newData.timestamp,
+            severity: newData.status as "warning" | "critical",
+            metric,
+            message
+          }]
+        })
+      }
     })
 
     return () => unsubscribe()
@@ -63,16 +132,17 @@ export default function DashboardPage() {
     return null
   }
 
-  const alertCount =
-    (currentData.lt_1mm_percent > product.thresholds.lt_1mm_max ? 1 : 0) +
-    (currentData.gt_4mm_percent > product.thresholds.gt_4mm_max ? 1 : 0) +
-    (currentData.color_score < product.thresholds.color_score_min ? 1 : 0)
-
   return (
-    <div className="min-h-screen bg-background">
-      <DashboardHeader username={username} productName={product.name} alertCount={alertCount} />
+    <div className="min-h-screen bg-gradient-to-br from-background via-secondary/5 to-background relative overflow-hidden">
+      {/* Subtle background decoration */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-40">
+        <div className="absolute top-20 right-20 w-96 h-96 bg-primary/5 rounded-full blur-3xl" />
+        <div className="absolute bottom-20 left-20 w-96 h-96 bg-accent/5 rounded-full blur-3xl" />
+      </div>
 
-      <main className="container mx-auto px-4 py-4">
+      <DashboardHeader username={username} productName={product.name} alerts={alerts} />
+
+      <main className="w-full px-6 py-4 relative z-10">
         <div className="space-y-4">
           {/* Top row - Camera, Charts, and Notifications */}
           <div className="grid gap-4 lg:grid-cols-3">
@@ -80,12 +150,17 @@ export default function DashboardPage() {
             <CameraFeedPanel />
 
             {/* Granulometry and Color Detection - Compact Combined */}
-            <Card className="border-border">
-              <CardHeader className="pb-3">
-                <CardTitle>Quality Metrics</CardTitle>
-                <CardDescription>Current production analysis</CardDescription>
+            <Card className="border-border shadow-md hover:shadow-lg transition-shadow bg-card/80 backdrop-blur-sm">
+              <CardHeader className="pb-3 border-b">
+                <div className="flex items-center gap-2">
+                  <div className="w-1 h-6 bg-primary rounded-full" />
+                  <div>
+                    <CardTitle className="text-base">Quality Metrics</CardTitle>
+                    <CardDescription className="text-xs">Real-time production analysis</CardDescription>
+                  </div>
+                </div>
               </CardHeader>
-              <CardContent className="space-y-6">
+              <CardContent className="space-y-6 pt-5">
                 <GranulometryChart
                   compact
                   data={{
@@ -96,10 +171,10 @@ export default function DashboardPage() {
                   }}
                 />
                 <div className="border-t pt-6">
-                  <ColorDetectionCard 
-                    compact 
-                    colorScore={currentData.color_score} 
-                    threshold={product.thresholds.color_score_min} 
+                  <ColorDetectionCard
+                    compact
+                    colorScore={currentData.color_score}
+                    threshold={product.thresholds.color_score_min}
                   />
                 </div>
               </CardContent>
@@ -111,7 +186,12 @@ export default function DashboardPage() {
 
           {/* Bottom row - Trend Charts */}
           <div className="space-y-2">
-            <h2 className="text-base font-semibold">Trend Monitoring</h2>
+            <div className="flex items-center gap-3">
+              <div className="w-1 h-6 bg-primary rounded-full" />
+              <h2 className="text-lg font-bold text-foreground">Trend Monitoring</h2>
+              <div className="flex-1 h-px bg-border" />
+              <span className="text-xs text-muted-foreground bg-secondary/50 px-3 py-1 rounded-full">Last 30 minutes</span>
+            </div>
             <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-4">
               <TrendChart
                 data={historicalData}

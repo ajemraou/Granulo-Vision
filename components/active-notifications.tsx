@@ -47,11 +47,11 @@ export function ActiveNotifications({ currentData, product }: ActiveNotification
 
   return (
     <Card className="border-border">
-      <CardHeader className="pb-3">
+      <CardHeader className="pb-2 pt-4">
         <CardTitle className="text-base">Active Notifications</CardTitle>
         <CardDescription className="text-xs">Quality alerts</CardDescription>
       </CardHeader>
-      <CardContent className="pb-3">
+      <CardContent className="pb-2">
         {notifications.length === 0 ? (
           <div className="flex items-center gap-3 p-4 rounded-lg bg-success/10 border border-success/20">
             <CheckCircle className="w-5 h-5 text-success" />
@@ -65,29 +65,27 @@ export function ActiveNotifications({ currentData, product }: ActiveNotification
             {notifications.map((notification) => (
               <div
                 key={notification.id}
-                className={`flex items-start gap-3 p-3 rounded-lg border ${
-                  notification.severity === "critical"
-                    ? "bg-destructive/10 border-destructive/20"
-                    : "bg-warning/10 border-warning/20"
-                }`}
+                className={`flex items-start gap-2 p-2 rounded-lg border ${notification.severity === "critical"
+                  ? "bg-destructive/10 border-destructive/20"
+                  : "bg-warning/10 border-warning/20"
+                  }`}
               >
                 {notification.severity === "critical" ? (
-                  <AlertCircle className="w-5 h-5 text-destructive flex-shrink-0 mt-0.5" />
+                  <AlertCircle className="w-4 h-4 text-destructive flex-shrink-0 mt-0.5" />
                 ) : (
-                  <AlertTriangle className="w-5 h-5 text-warning flex-shrink-0 mt-0.5" />
+                  <AlertTriangle className="w-4 h-4 text-warning flex-shrink-0 mt-0.5" />
                 )}
-                <div className="flex-1 space-y-1">
+                <div className="flex-1 space-y-0.5">
                   <div className="flex items-center gap-2">
-                    <p className="text-sm font-medium">{notification.metric}</p>
+                    <p className="text-xs font-medium">{notification.metric}</p>
                     <Badge
                       variant={notification.severity === "critical" ? "destructive" : "secondary"}
-                      className="text-xs"
+                      className="text-[10px] px-1.5 py-0 h-4"
                     >
                       {notification.severity}
                     </Badge>
                   </div>
-                  <p className="text-xs text-muted-foreground">{notification.message}</p>
-                  <p className="text-xs text-muted-foreground">Duration: 60s evaluation window</p>
+                  <p className="text-[10px] text-muted-foreground leading-tight">{notification.message}</p>
                 </div>
               </div>
             ))}
