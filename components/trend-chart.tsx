@@ -62,8 +62,8 @@ export function TrendChart({ data, metric, title, color, threshold, thresholdTyp
   }
 
   return (
-    <Card className="border-border">
-      <CardHeader className="pb-0 pt-4">
+    <Card>
+      <CardHeader className="p-4 pb-2">
         <div className="flex items-start justify-between">
           <div>
             <CardTitle className="text-sm">{title}</CardTitle>
@@ -81,7 +81,7 @@ export function TrendChart({ data, metric, title, color, threshold, thresholdTyp
           </div>
         </div>
       </CardHeader>
-      <CardContent className="pb-2">
+      <CardContent className="p-4 pt-0">
         <ChartContainer config={chartConfig} className="h-[110px] w-full">
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={chartData} margin={{ top: 5, right: 5, left: 0, bottom: 0 }}>

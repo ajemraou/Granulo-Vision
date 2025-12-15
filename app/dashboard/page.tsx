@@ -145,13 +145,13 @@ export default function DashboardPage() {
       <main className="w-full px-6 py-4 relative z-10">
         <div className="space-y-4">
           {/* Top row - Camera, Charts, and Notifications */}
-          <div className="grid gap-4 lg:grid-cols-3">
+          <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
             {/* Camera Feed */}
             <CameraFeedPanel />
 
             {/* Granulometry and Color Detection - Compact Combined */}
-            <Card className="border-border shadow-md hover:shadow-lg transition-shadow bg-card/80 backdrop-blur-sm">
-              <CardHeader className="pb-3 border-b">
+            <Card className="shadow-md hover:shadow-lg transition-shadow bg-card/80 backdrop-blur-sm">
+              <CardHeader className="p-4 pb-3 border-b">
                 <div className="flex items-center gap-2">
                   <div className="w-1 h-6 bg-primary rounded-full" />
                   <div>
@@ -160,7 +160,7 @@ export default function DashboardPage() {
                   </div>
                 </div>
               </CardHeader>
-              <CardContent className="space-y-6 pt-5">
+              <CardContent className="space-y-6 p-4 pt-5">
                 <GranulometryChart
                   compact
                   data={{
@@ -192,7 +192,7 @@ export default function DashboardPage() {
               <div className="flex-1 h-px bg-border" />
               <span className="text-xs text-muted-foreground bg-secondary/50 px-3 py-1 rounded-full">Last 30 minutes</span>
             </div>
-            <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-4">
+            <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
               <TrendChart
                 data={historicalData}
                 metric="lt_1mm_percent"

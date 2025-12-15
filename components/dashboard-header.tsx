@@ -1,7 +1,7 @@
 "use client"
 
 import { Button } from "@/components/ui/button"
-import { LogOut, Archive, AlertCircle, Sun, Moon, LayoutDashboard, Settings2 } from "lucide-react"
+import { LogOut, Archive, AlertCircle, Sun, Moon, LayoutDashboard, Settings2, Menu } from "lucide-react"
 import { useRouter, usePathname } from "next/navigation"
 import { logout } from "@/lib/auth"
 import { Badge } from "@/components/ui/badge"
@@ -9,6 +9,7 @@ import Image from "next/image"
 import { useTheme } from "next-themes"
 import { useEffect, useState } from "react"
 import { cn } from "@/lib/utils"
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 
 import { AlertHistory, type AlertItem } from "@/components/alert-history"
 
@@ -23,6 +24,7 @@ export function DashboardHeader({ username, productName, alerts = [] }: Dashboar
   const pathname = usePathname()
   const { theme, setTheme } = useTheme()
   const [mounted, setMounted] = useState(false)
+  const [isOpen, setIsOpen] = useState(false)
 
   // Avoid hydration mismatch
   useEffect(() => {
@@ -42,11 +44,87 @@ export function DashboardHeader({ username, productName, alerts = [] }: Dashboar
   const isArchive = pathname === "/archive"
   const isSelectProduct = pathname === "/select-product"
 
+  const NavLinks = ({ mobile = false }: { mobile?: boolean }) => (
+    <>
+      {!isDashboard && !isSelectProduct && (
+        <Button
+          variant="ghost"
+          size={mobile ? "default" : "sm"}
+          onClick={() => {
+            router.push("/dashboard")
+            if (mobile) setIsOpen(false)
+          }}
+          className={cn("text-muted-foreground hover:text-foreground", mobile && "justify-start w-full")}
+        >
+          <LayoutDashboard className="w-4 h-4 mr-2" />
+          Dashboard
+        </Button>
+      )}
+      {!isArchive && !isSelectProduct && (
+        <Button
+          variant="ghost"
+          size={mobile ? "default" : "sm"}
+          onClick={() => {
+            router.push("/archive")
+            if (mobile) setIsOpen(false)
+          }}
+          className={cn("text-muted-foreground hover:text-foreground", mobile && "justify-start w-full")}
+        >
+          <Archive className="w-4 h-4 mr-2" />
+          Archive
+        </Button>
+      )}
+      {!isSelectProduct && (
+        <Button
+          variant="ghost"
+          size={mobile ? "default" : "sm"}
+          onClick={() => {
+            router.push("/select-product")
+            if (mobile) setIsOpen(false)
+          }}
+          className={cn("text-muted-foreground hover:text-foreground", mobile && "justify-start w-full")}
+        >
+          <Settings2 className="w-4 h-4 mr-2" />
+          Select Product
+        </Button>
+      )}
+    </>
+  )
+
   return (
     <header className="border-b border-border bg-card/80 backdrop-blur-md sticky top-0 z-50 shadow-sm transition-all duration-200">
-      <div className="w-full px-6 py-4">
+      <div className="w-full px-4 md:px-6 py-3 md:py-4">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3 md:gap-4">
+            {/* Mobile Menu Trigger */}
+            <div className="md:hidden">
+              <Sheet open={isOpen} onOpenChange={setIsOpen}>
+                <SheetTrigger asChild>
+                  <Button variant="ghost" size="icon" className="mr-2">
+                    <Menu className="w-5 h-5" />
+                  </Button>
+                </SheetTrigger>
+                <SheetContent side="left" className="w-[240px] sm:w-[300px]">
+                  <div className="flex flex-col gap-6 py-4">
+                    <div className="flex items-center gap-3 px-2">
+                      <div className="relative w-8 h-8">
+                        <Image
+                          src="/logo.png"
+                          alt="Logo"
+                          fill
+                          className="object-contain"
+                        />
+                      </div>
+                      <span className="font-bold">Granulo Vision</span>
+                    </div>
+                    <nav className="flex flex-col gap-2">
+                      <NavLinks mobile />
+                    </nav>
+                  </div>
+                </SheetContent>
+              </Sheet>
+            </div>
+
             <div
               className="relative cursor-pointer group"
               onClick={() => !isDashboard && router.push("/dashboard")}
@@ -57,7 +135,7 @@ export function DashboardHeader({ username, productName, alerts = [] }: Dashboar
                 alt="Logo"
                 width={40}
                 height={40}
-                className="relative drop-shadow-lg transition-transform group-hover:scale-105"
+                className="relative drop-shadow-lg transition-transform group-hover:scale-105 w-8 h-8 md:w-10 md:h-10"
               />
             </div>
 
@@ -76,27 +154,10 @@ export function DashboardHeader({ username, productName, alerts = [] }: Dashboar
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
-            {/* Navigation Links */}
+          <div className="flex items-center gap-2 md:gap-3">
+            {/* Desktop Navigation */}
             <nav className="hidden md:flex items-center gap-1 mr-2">
-              {!isDashboard && !isSelectProduct && (
-                <Button variant="ghost" size="sm" onClick={() => router.push("/dashboard")} className="text-muted-foreground hover:text-foreground">
-                  <LayoutDashboard className="w-4 h-4 mr-2" />
-                  Dashboard
-                </Button>
-              )}
-              {!isArchive && !isSelectProduct && (
-                <Button variant="ghost" size="sm" onClick={() => router.push("/archive")} className="text-muted-foreground hover:text-foreground">
-                  <Archive className="w-4 h-4 mr-2" />
-                  Archive
-                </Button>
-              )}
-              {!isSelectProduct && (
-                <Button variant="ghost" size="sm" onClick={() => router.push("/select-product")} className="text-muted-foreground hover:text-foreground">
-                  <Settings2 className="w-4 h-4 mr-2" />
-                  Select Product
-                </Button>
-              )}
+              <NavLinks />
             </nav>
 
             {/* Alerts History */}
@@ -106,7 +167,7 @@ export function DashboardHeader({ username, productName, alerts = [] }: Dashboar
 
             {/* Theme Toggle */}
             {mounted && (
-              <Button variant="ghost" size="icon" onClick={toggleTheme} className="h-9 w-9 text-muted-foreground hover:text-primary">
+              <Button variant="ghost" size="icon" onClick={toggleTheme} className="h-9 w-9 text-muted-foreground hover:text-primary hidden sm:flex">
                 {theme === "dark" ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
               </Button>
             )}

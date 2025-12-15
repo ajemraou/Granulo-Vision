@@ -97,8 +97,8 @@ export function ColorDetectionCard({ colorScore, threshold, compact = false }: C
   }
 
   return (
-    <Card className="border-border">
-      <CardHeader>
+    <Card>
+      <CardHeader className="p-4">
         <div className="flex items-center justify-between">
           <div>
             <CardTitle>Color Consistency</CardTitle>
@@ -107,7 +107,7 @@ export function ColorDetectionCard({ colorScore, threshold, compact = false }: C
           <Badge variant={status.variant}>{status.label}</Badge>
         </div>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-4 p-4 pt-0">
         {/* Main KPI - Consistency Score */}
         <div className="flex items-center justify-between p-4 rounded-lg bg-secondary/30">
           <div>

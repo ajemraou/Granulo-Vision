@@ -130,12 +130,12 @@ export function GranulometryChart({ data, compact = false }: GranulometryChartPr
   }
 
   return (
-    <Card className="border-border">
-      <CardHeader>
+    <Card>
+      <CardHeader className="p-4">
         <CardTitle>Granulometry Distribution</CardTitle>
         <CardDescription>Rolling 60-second average</CardDescription>
       </CardHeader>
-      <CardContent>
+      <CardContent className="p-4 pt-0">
         <ChartContainer config={chartConfig} className="h-[300px]">
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>

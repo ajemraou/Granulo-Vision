@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { useState, useEffect, useRef } from "react"
 import Image from "next/image"
-import { Maximize2, ZoomIn, ZoomOut, RotateCcw, Move } from "lucide-react"
+import { Maximize2, ZoomIn, ZoomOut, RotateCcw, Move, X } from "lucide-react"
 
 const TOTAL_FRAMES = 80
 const FRAME_RATE = 5000 // milliseconds between frames
@@ -120,8 +120,8 @@ export function CameraFeedPanel() {
 
   return (
     <Dialog>
-      <Card className="border-border shadow-md hover:shadow-lg transition-shadow bg-card/80 backdrop-blur-sm h-full flex flex-col">
-        <CardHeader className="pb-3 border-b flex flex-row items-center justify-between space-y-0">
+      <Card className="shadow-md hover:shadow-lg transition-shadow bg-card/80 backdrop-blur-sm h-full flex flex-col">
+        <CardHeader className="p-4 pb-3 border-b flex flex-row items-center justify-between space-y-0">
           <div className="space-y-1">
             <CardTitle className="text-base flex items-center gap-2">
               Camera Reference
@@ -163,45 +163,59 @@ export function CameraFeedPanel() {
         </CardContent>
       </Card>
 
-      <DialogContent className="max-w-5xl w-[95vw] h-[90vh] p-0 gap-0 bg-black/95 border-white/10 overflow-hidden flex flex-col">
+      <DialogContent showCloseButton={false} className="max-w-none w-screen h-screen p-0 gap-0 bg-black/95 border-none rounded-none overflow-hidden flex flex-col">
         <DialogHeader className="p-4 bg-black/50 backdrop-blur-md border-b border-white/10 absolute top-0 left-0 right-0 z-50 flex flex-row items-center justify-between">
           <DialogTitle className="text-white flex items-center gap-3">
             <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
             Live Feed - Camera 01
           </DialogTitle>
-          <div className="flex items-center gap-2 mr-8">
-            <div className="bg-white/10 rounded-lg flex items-center p-1 border border-white/10">
+          <div className="flex items-center gap-4 mr-2">
+            <div className="flex items-center gap-2">
+              <div className="bg-white/10 rounded-lg flex items-center p-1 border border-white/10">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={handleZoomOut}
+                  disabled={zoomLevel <= 1}
+                  className="h-8 w-8 text-white hover:bg-white/20"
+                >
+                  <ZoomOut className="w-4 h-4" />
+                </Button>
+                <div className="w-px h-4 bg-white/20 mx-1" />
+                <span className="text-xs font-mono text-white w-12 text-center">{Math.round(zoomLevel * 100)}%</span>
+                <div className="w-px h-4 bg-white/20 mx-1" />
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={handleZoomIn}
+                  disabled={zoomLevel >= 4}
+                  className="h-8 w-8 text-white hover:bg-white/20"
+                >
+                  <ZoomIn className="w-4 h-4" />
+                </Button>
+              </div>
               <Button
-                variant="ghost"
-                size="icon"
-                onClick={handleZoomOut}
-                disabled={zoomLevel <= 1}
-                className="h-8 w-8 text-white hover:bg-white/20"
+                variant="outline"
+                size="sm"
+                onClick={handleReset}
+                className="h-10 bg-transparent border-white/20 text-white hover:bg-white/10 hover:text-white"
               >
-                <ZoomOut className="w-4 h-4" />
-              </Button>
-              <div className="w-px h-4 bg-white/20 mx-1" />
-              <span className="text-xs font-mono text-white w-12 text-center">{Math.round(zoomLevel * 100)}%</span>
-              <div className="w-px h-4 bg-white/20 mx-1" />
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={handleZoomIn}
-                disabled={zoomLevel >= 4}
-                className="h-8 w-8 text-white hover:bg-white/20"
-              >
-                <ZoomIn className="w-4 h-4" />
+                <RotateCcw className="w-4 h-4 mr-2" />
+                Reset
               </Button>
             </div>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleReset}
-              className="h-10 bg-transparent border-white/20 text-white hover:bg-white/10 hover:text-white"
-            >
-              <RotateCcw className="w-4 h-4 mr-2" />
-              Reset
-            </Button>
+
+            <div className="h-8 w-px bg-white/10 mx-2" />
+
+            <DialogTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-10 w-10 rounded-full bg-white/10 text-white hover:bg-red-500/20 hover:text-red-500 transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </Button>
+            </DialogTrigger>
           </div>
         </DialogHeader>
 

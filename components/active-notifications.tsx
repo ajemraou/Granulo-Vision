@@ -46,12 +46,12 @@ export function ActiveNotifications({ currentData, product }: ActiveNotification
   }
 
   return (
-    <Card className="border-border">
-      <CardHeader className="pb-2 pt-4">
+    <Card>
+      <CardHeader className="p-4 pb-2">
         <CardTitle className="text-base">Active Notifications</CardTitle>
         <CardDescription className="text-xs">Quality alerts</CardDescription>
       </CardHeader>
-      <CardContent className="pb-2">
+      <CardContent className="p-4 pt-0">
         {notifications.length === 0 ? (
           <div className="flex items-center gap-3 p-4 rounded-lg bg-success/10 border border-success/20">
             <CheckCircle className="w-5 h-5 text-success" />

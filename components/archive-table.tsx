@@ -28,7 +28,7 @@ export function ArchiveTable({ data, onViewRecord }: ArchiveTableProps) {
 
   if (data.length === 0) {
     return (
-      <Card className="border-border">
+      <Card>
         <CardContent className="py-12 text-center">
           <p className="text-muted-foreground">No records found matching the current filters</p>
         </CardContent>
@@ -37,7 +37,7 @@ export function ArchiveTable({ data, onViewRecord }: ArchiveTableProps) {
   }
 
   return (
-    <Card className="border-border">
+    <Card>
       <CardContent className="p-0">
         <div className="overflow-x-auto">
           <Table>
